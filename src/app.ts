@@ -1,6 +1,6 @@
 import express, { Application, Request, Response } from "express";
 import cors from "cors";
-// import router from "./app/routes";
+import router from "./app/routes";
 import globalErrorHandler from "./app/middlewares/globalErrorHandlers";
 import httpStatus from "http-status";
 
@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(cors());
 
 // applications routes
-// app.use("/api", router);
+app.use("/api", router);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the MB online nursery server");
@@ -22,7 +22,7 @@ app.all("*", (req: Request, res: Response) => {
   res.status(400).json({
     success: false,
     statusCode: httpStatus.NOT_FOUND,
-    message: "Not Found",
+    message: "Route Not Found",
   });
 });
 

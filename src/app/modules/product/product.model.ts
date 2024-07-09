@@ -31,6 +31,10 @@ const productSchema = new Schema<TProduct>(
       type: String,
       required: true,
     },
+    isAvailable: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

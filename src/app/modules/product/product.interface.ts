@@ -7,4 +7,5 @@ export type TProduct = {
   rating: number;
   price: number;
   image: string;
+  isAvailable?: true;
 };
