@@ -8,8 +8,27 @@ const createProductToDB = async (payload: TProduct) => {
 };
 
 //* getting all product from DB
-const getAllProductSFromDb = async () => {
-  const result = await Product.find();
+const getAllProductSFromDb = async (query: Record<string, unknown>) => {
+  // const query: Record<string, unknown> = {};
+  const { searchTerm } = query;
+  const { category } = query;
+
+  //! SEARCHING FOR PRODUCT
+  if (searchTerm) {
+    const result = await Product.find({
+      $or: [
+        { name: { $regex: `${searchTerm}`, $options: "i" } },
+        { description: { $regex: `${searchTerm}`, $options: "i" } },
+        { category: { $regex: `${searchTerm}`, $options: "i" } },
+      ],
+    });
+    return result;
+  }
+
+  if (category) {
+    query.category = category;
+  }
+  const result = await Product.find(query).sort({ price: -1 });
   return result;
 };
 
