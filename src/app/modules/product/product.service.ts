@@ -1,5 +1,6 @@
 import { TProduct } from "./product.interface";
 import { Product } from "./product.model";
+import { SortOrder } from "mongoose";
 
 //* creating new product to DB
 const createProductToDB = async (payload: TProduct) => {
@@ -9,9 +10,15 @@ const createProductToDB = async (payload: TProduct) => {
 
 //* getting all product from DB
 const getAllProductSFromDb = async (query: Record<string, unknown>) => {
-  // const query: Record<string, unknown> = {};
-  const { searchTerm } = query;
-  const { category } = query;
+  const { searchTerm, sortBy, category } = query as {
+    searchTerm?: string;
+    sortBy?: string;
+    category?: string;
+  };
+
+  // !making copy of query and removing sortBy
+  const filterQuery = { ...query };
+  delete filterQuery.sortBy;
 
   //! SEARCHING FOR PRODUCT
   if (searchTerm) {
@@ -28,7 +35,21 @@ const getAllProductSFromDb = async (query: Record<string, unknown>) => {
   if (category) {
     query.category = category;
   }
-  const result = await Product.find(query).sort({ price: -1 });
+
+  //! SORTING PRODUCTS
+  const sort: { [key: string]: SortOrder } = {};
+
+  if (sortBy) {
+    const sortFields: string[] = sortBy.split(",");
+
+    sortFields.forEach((field: string) => {
+      const [key, order] = field.split(":");
+      sort[key] = order === "desc" ? -1 : 1;
+    });
+  }
+
+  const result = await Product.find(filterQuery).sort(sort);
+
   return result;
 };
 
