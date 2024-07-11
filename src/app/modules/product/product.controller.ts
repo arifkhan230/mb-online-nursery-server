@@ -3,7 +3,7 @@ import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { ProductServices } from "./product.service";
 
-//* creating new product
+//! creating new product
 const createProduct = catchAsync(async (req, res) => {
   const payload = req.body;
   const result = await ProductServices.createProductToDB(payload);
@@ -16,7 +16,7 @@ const createProduct = catchAsync(async (req, res) => {
   });
 });
 
-//* Getting all products
+//! Getting all products
 const getAllProducts = catchAsync(async (req, res) => {
   const result = await ProductServices.getAllProductSFromDb(req.query);
 
@@ -30,7 +30,20 @@ const getAllProducts = catchAsync(async (req, res) => {
   });
 });
 
-//* deleting product
+//! getting single product
+const getSingleProduct = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await ProductServices.getSingleProductFromDB(id);
+
+  sendResponse(res, {
+    success: result ? true : false,
+    statusCode: result ? httpStatus.OK : httpStatus.NOT_FOUND,
+    message: result ? "Retrieved Products Successfully" : "no data found",
+    data: result ? result : {},
+  });
+});
+
+//! deleting product
 const deleteProduct = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await ProductServices.deleteProductToDB(id);
@@ -43,7 +56,7 @@ const deleteProduct = catchAsync(async (req, res) => {
   });
 });
 
-//* updating  product
+//! updating  product
 const updateProduct = catchAsync(async (req, res) => {
   const { id } = req.params;
   const paylaod = req.body;
@@ -59,7 +72,8 @@ const updateProduct = catchAsync(async (req, res) => {
 
 export const ProductController = {
   createProduct,
-  deleteProduct,
   getAllProducts,
+  getSingleProduct,
+  deleteProduct,
   updateProduct,
 };

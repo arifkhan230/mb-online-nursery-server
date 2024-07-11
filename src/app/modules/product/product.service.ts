@@ -10,27 +10,40 @@ const createProductToDB = async (payload: TProduct) => {
 
 //* getting all product from DB
 const getAllProductSFromDb = async (query: Record<string, unknown>) => {
-  const { searchTerm, sortBy, category } = query as {
+  const { searchTerm, sortBy, category, page, limit } = query as {
     searchTerm?: string;
     sortBy?: string;
     category?: string;
+    page: number;
+    skip: number;
+    limit: number;
   };
 
-  // !making copy of query and removing sortBy
-  const filterQuery = { ...query };
-  delete filterQuery.sortBy;
+  // !making copy of query and removing sortBy, page,skip,limit
+  const queryObj = { ...query };
+  const excludeFields = ["searchTerm", "sortBy", "limit", "page"];
+  excludeFields.forEach((el) => delete queryObj[el]);
 
   //! SEARCHING FOR PRODUCT
   if (searchTerm) {
-    const result = await Product.find({
-      $or: [
-        { name: { $regex: `${searchTerm}`, $options: "i" } },
-        { description: { $regex: `${searchTerm}`, $options: "i" } },
-        { category: { $regex: `${searchTerm}`, $options: "i" } },
-      ],
-    });
+    const result = await Product.find(
+      {
+        $or: [
+          { name: { $regex: `${searchTerm}`, $options: "i" } },
+          { description: { $regex: `${searchTerm}`, $options: "i" } },
+          { category: { $regex: `${searchTerm}`, $options: "i" } },
+        ],
+      },
+      {
+        createdAt: 0,
+        updatedAt: 0,
+        __v: 0,
+      }
+    );
     return result;
   }
+
+  //! filtering
 
   if (category) {
     query.category = category;
@@ -48,18 +61,37 @@ const getAllProductSFromDb = async (query: Record<string, unknown>) => {
     });
   }
 
-  const result = await Product.find(filterQuery).sort(sort);
+  //! pagination
+  let skip = 0;
+  if (page && limit) {
+    skip = Number(page - 1) * Number(limit);
+  }
+
+  const result = await Product.find(queryObj, {
+    createdAt: 0,
+    updatedAt: 0,
+    __v: 0,
+  })
+    .skip(skip)
+    .limit(limit)
+    .sort(sort);
 
   return result;
 };
 
-//* deleting  product from DB
+//! Getting single product
+const getSingleProductFromDB = async (id: string) => {
+  const result = await Product.findById(id);
+  return result;
+};
+
+//! deleting  product from DB
 const deleteProductToDB = async (id: string) => {
   const result = await Product.findByIdAndDelete(id);
   return result;
 };
 
-//* update product from DB
+//! update product from DB
 const updateProductToDB = async (id: string, payload: Partial<TProduct>) => {
   const result = await Product.findByIdAndUpdate(id, payload, {
     new: true,
@@ -70,7 +102,8 @@ const updateProductToDB = async (id: string, payload: Partial<TProduct>) => {
 
 export const ProductServices = {
   createProductToDB,
-  deleteProductToDB,
   getAllProductSFromDb,
+  getSingleProductFromDB,
+  deleteProductToDB,
   updateProductToDB,
 };

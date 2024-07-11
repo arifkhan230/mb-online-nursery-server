@@ -18,5 +18,6 @@ router.put(
 );
 
 router.get("/", ProductController.getAllProducts);
+router.get("/:id", ProductController.getSingleProduct);
 
 export const ProductRoutes = router;
